@@ -1,0 +1,12 @@
+# Maven build output
+target/
+
+# IDE settings
+.idea/
+*.iml
+
+# OS files
+.DS_Store
+
+# Local configuration
+.env
