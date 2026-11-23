@@ -3,15 +3,23 @@ package com.example.sms_backend.service.impl;
 import com.example.sms_backend.Mapper.StudentMapper;
 import com.example.sms_backend.dto.StudentDto;
 import com.example.sms_backend.entity.Student;
+import com.example.sms_backend.exception.GlobalExceptionHandler.ResourceNotFoundException;
 import com.example.sms_backend.repository.StudentRepository;
 import com.example.sms_backend.service.StudentService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
 @AllArgsConstructor
+@Transactional(
+        propagation = Propagation.REQUIRED,
+        isolation = Isolation.READ_COMMITTED
+)
 public class StudentServiceimpl implements StudentService {
     private StudentRepository studentRepository;
 
@@ -25,7 +33,7 @@ public class StudentServiceimpl implements StudentService {
     @Override
     public StudentDto getStudentById(Long id) {
         Student student = studentRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Student does not exist"));
+                .orElseThrow(() -> new ResourceNotFoundException("Student does not exist"));
         return StudentMapper.mapToStudentDto(student);
     }
 
@@ -36,9 +44,22 @@ public class StudentServiceimpl implements StudentService {
     }
 
     @Override
+    public List<StudentDto> searchStudents(String name) {
+        if (name == null || name.isBlank()) {
+            return getAllStudents();
+        }
+
+        return studentRepository
+                .findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(name, name)
+                .stream()
+                .map(StudentMapper::mapToStudentDto)
+                .toList();
+    }
+
+    @Override
     public StudentDto updateStudent(Long id, StudentDto studentDto) {
         Student student = studentRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Student does not exist"));
+                .orElseThrow(() -> new ResourceNotFoundException("Student does not exist"));
 
         student.setFirstName(studentDto.getFirstName());
         student.setLastName(studentDto.getLastName());
@@ -51,7 +72,7 @@ public class StudentServiceimpl implements StudentService {
     @Override
     public void deleteStudent(Long id) {
         Student student = studentRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Student does not exist"));
+                .orElseThrow(() -> new ResourceNotFoundException("Student does not exist"));
         studentRepository.delete(student);
     }
 }
