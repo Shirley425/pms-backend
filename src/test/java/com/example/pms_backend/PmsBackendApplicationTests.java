@@ -1,10 +1,10 @@
-package com.example.sms_backend;
+package com.example.pms_backend;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class SmsBackendApplicationTests {
+class PmsBackendApplicationTests {
 
 	@Test
 	void contextLoads() {
